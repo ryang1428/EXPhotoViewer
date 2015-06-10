@@ -60,7 +60,7 @@ static CGFloat s_backgroundScale = 0.8f;
 }
 
 - (void) showImageFrom:(UIImageView*) imageView {
-    UIViewController * controller = [self rootViewController];
+    UIViewController * controller = [self topViewControllerWithRootViewController:[self rootViewController]];
     
     self.tempViewContainer = [[UIView alloc] initWithFrame:controller.view.bounds];
     self.tempViewContainer.backgroundColor = controller.view.backgroundColor;
@@ -101,6 +101,25 @@ static CGFloat s_backgroundScale = 0.8f;
     self.selfController = self; //Stupid ARC I need to do this to avoid being dealloced :P
     self.originalImage = imageView;
     imageView.image = nil;
+}
+
+- (UIViewController*)topViewController {
+    return [self topViewControllerWithRootViewController:[UIApplication sharedApplication].keyWindow.rootViewController];
+}
+
+- (UIViewController*)topViewControllerWithRootViewController:(UIViewController*)rootViewController {
+    if ([rootViewController isKindOfClass:[UITabBarController class]]) {
+        UITabBarController* tabBarController = (UITabBarController*)rootViewController;
+        return [self topViewControllerWithRootViewController:tabBarController.selectedViewController];
+    } else if ([rootViewController isKindOfClass:[UINavigationController class]]) {
+        UINavigationController* navigationController = (UINavigationController*)rootViewController;
+        return [self topViewControllerWithRootViewController:navigationController.visibleViewController];
+    } else if (rootViewController.presentedViewController) {
+        UIViewController* presentedViewController = rootViewController.presentedViewController;
+        return [self topViewControllerWithRootViewController:presentedViewController];
+    } else {
+        return rootViewController;
+    }
 }
 
 -(void) dealloc{
